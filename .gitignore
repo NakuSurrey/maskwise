@@ -1,0 +1,93 @@
+# ─── Secrets ────────────────────────────────────────────────────
+# real .env file has passwords + DB connection strings — NEVER push
+.env
+.env.local
+.env.production
+*.pem
+*.key
+secrets/
+
+# ─── Python ─────────────────────────────────────────────────────
+# bytecode and caches — regenerated on every run
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# venv folders — created locally, do not share
+.venv/
+venv/
+env/
+
+# pip / build artifacts
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# testing + coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# type checkers
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+
+# ─── Node / Next.js (frontend in Phase 1) ───────────────────────
+node_modules/
+.next/
+out/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+
+# ─── ML model artifacts (Phase 2+) ──────────────────────────────
+# trained models are too big for git — distributed separately
+*.onnx
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.h5
+models/
+checkpoints/
+
+# datasets — never commit raw data, especially PII training sets
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.jsonl
+
+# ─── Docker / compose ───────────────────────────────────────────
+# docker-compose override files for local-only tweaks
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ─── Editor / OS junk ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── MaskWise-specific ──────────────────────────────────────────
+# any test images / dummy data created during local dev
+test_images/
+dummy_data/
+local_dumps/
+
+# pip-tools / poetry lock metadata variants we never push
+.python-version
