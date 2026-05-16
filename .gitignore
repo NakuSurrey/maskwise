@@ -95,3 +95,5 @@ local_dumps/
 
 # the zip files 
 *.zip
+# Build zips delivered through chat workflow
+*.zip
