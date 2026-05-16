@@ -1,0 +1,39 @@
+# ─── secrets — NEVER ship to image ──────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── python build artifacts ─────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── virtualenvs ────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ─── editor + os junk ───────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ─── tests + docs not needed in runtime ─────────────────────────
+tests/
+docs/
+*.md
+README.md
+
+# ─── git metadata ───────────────────────────────────────────────
+.git/
+.gitignore
+.github/

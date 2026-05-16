@@ -1,0 +1,12 @@
+# ─── core web framework ─────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# ─── config + validation ────────────────────────────────────────
+pydantic==2.9.2
+pydantic-settings==2.6.0
+
+# NOTE — kept deliberately minimal for Phase 0.
+# Phase 1 will add: presidio-analyzer, presidio-anonymizer, redis, structlog
+# Phase 2 will add: onnxruntime, transformers
+# Phase 3 will add: paddleocr, retinaface, opencv-python-headless
