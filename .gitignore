@@ -91,3 +91,7 @@ local_dumps/
 
 # pip-tools / poetry lock metadata variants we never push
 .python-version
+
+
+# the zip files 
+*.zip
