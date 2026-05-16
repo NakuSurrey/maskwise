@@ -1,38 +1,38 @@
 # MaskWise
 
-Production PII masking service for LLMs — detects and redacts personal data before submission to ChatGPT, Claude, and Gemini.
+> **Production PII masking service for LLMs** — detects and redacts personal data before submission to ChatGPT, Claude, and Gemini.
 
-> ⚠️ Under active development. Phase 0 (Foundation Setup) — building the deployment pipeline. Full feature set lands in Phase 1+.
+## What It Does
 
-## What This Will Do
+- **Text PII masking** — replaces names, emails, phone numbers, API keys, NHS numbers, and 10+ other categories of personal data with safe placeholders before you paste into an LLM.
+- **Verifiable erasure** — every mask session lives in memory for 1 hour, then auto-deletes. Verifiable via a public stats dashboard and per-session erasure endpoint.
+- **Open-source and auditable** — every line of the detection, masking, and storage logic is readable on this repo. Nothing hidden, nothing proprietary about how the privacy promise is kept.
 
-- **Text PII masking** — paste text, get masked output, copy to your LLM.
-- **Image PII masking** — upload screenshots, faces blurred + text redacted.
-- **Chrome extension** — auto-mask PII before sending to ChatGPT, Claude, Gemini.
-- **Verifiable erasure** — your session expires from memory after 1 hour. Public stats dashboard proves it.
+## The Problem
 
-## Why This Exists
+People paste sensitive data into LLMs every day. Real names, real emails, real API keys, real customer information. The LLM provider then has it. Samsung famously banned ChatGPT after engineers leaked production source code through it. A developer pasting customer data into Claude can trigger real GDPR liability for their company.
 
-People paste sensitive data into LLMs every day. Real names, real emails, real API keys, real customer information. The LLM provider then has it. MaskWise sits between the user and the LLM, replacing PII with placeholders before submission.
-
-## Project Status
-
-| Phase | Status |
-|-------|--------|
-| Phase 0 — Foundation Setup | 🟡 In progress |
-| Phase 1 — Text PII MVP | ⚪ Not started |
-| Phase 2 — Fine-tuned DeBERTa + monitoring | ⚪ Not started |
-| Phase 3 — Image PII | ⚪ Not started |
-| Phase 4 — Chrome extension | ⚪ Not started |
-| Phase 5 — Polish + launch | ⚪ Not started |
-
-Full README (architecture, tech stack, deploy guide, learnings) lands in Phase 5.
+MaskWise sits between the user and the LLM, replacing real data with placeholders before it ever leaves the user's browser.
 
 ## Privacy By Design
 
-- Raw user input lives in exactly one place: Redis, with a 1-hour TTL.
-- Forbidden in logs, postgres, error traces, metrics, filesystem.
-- Open-source — every line of code is auditable.
+- Raw user input lives in exactly one place: an in-memory store, with a 1-hour TTL.
+- Forbidden everywhere else: logs, databases, error traces, metrics, filesystem.
+- Containers bound to loopback only — no service has direct internet exposure.
+- ICO-registered data controller.
+- All containers run as non-root, with hard CPU and memory caps and `noexec` `/tmp` mounts.
+
+## Tech Stack
+
+| Layer | Choice |
+|-------|--------|
+| Backend | Python 3.11, FastAPI, Uvicorn |
+| PII detection | Microsoft Presidio + custom recognizers |
+| Session store | Redis (in-memory, TTL-enforced) |
+| Reverse proxy | Nginx |
+| TLS | Let's Encrypt |
+| Containerisation | Docker, Docker Compose |
+| Infrastructure | Hetzner Cloud (self-managed) |
 
 ## License
 
