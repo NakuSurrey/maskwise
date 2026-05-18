@@ -17,7 +17,7 @@ from app.config import settings
 app = FastAPI(
     title="MaskWise API",
     description="Production PII masking service for LLMs.",
-    version="0.1.0",
+    version="0.1.1",
     docs_url="/docs" if settings.app_env != "production" else None,
     redoc_url="/redoc" if settings.app_env != "production" else None,
     openapi_url="/openapi.json" if settings.app_env != "production" else None,
@@ -38,7 +38,7 @@ async def health() -> JSONResponse:
         content={
             "status": "ok",
             "service": "maskwise-api",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "environment": settings.app_env,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
