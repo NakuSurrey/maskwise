@@ -2,6 +2,12 @@
 
 > **Production PII masking service for LLMs** — detects and redacts personal data before submission to ChatGPT, Claude, and Gemini.
 
+## Live
+
+🔒 **[https://maskwise.nakularora.tech/health](https://maskwise.nakularora.tech/health)** — `{"status":"ok"}` 200 OK
+
+Hosted on Hetzner (Nuremberg). HTTPS via Let's Encrypt. Stub `/health` endpoint live; full PII masking lands in Phase 1.
+
 ## What It Does
 
 - **Text PII masking** — replaces names, emails, phone numbers, API keys, NHS numbers, and 10+ other categories of personal data with safe placeholders before you paste into an LLM.
