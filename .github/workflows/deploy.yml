@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────────────
+# MaskWise — auto-deploy workflow
+# Triggered on every push to main. SSHes into the Hetzner box as the
+# `deploy` user, fetches latest code, rebuilds the docker image, restarts
+# the container. Live URL updates in ~30 seconds.
+# ─────────────────────────────────────────────────────────────────────────
+
+name: Deploy to Hetzner
+
+# trigger: every push to main. PRs do NOT deploy — only merged code.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout is not strictly needed (server does its own git pull),
+      # but useful so we can log which commit triggered the deploy.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # show what commit triggered this run — helps debug if a deploy fails
+      - name: Show commit info
+        run: |
+          echo "Triggered by commit: ${{ github.sha }}"
+          echo "Pushed by:           ${{ github.actor }}"
+          echo "Commit message:      ${{ github.event.head_commit.message }}"
+
+      # the actual deploy. SSHes in as deploy@host using the private key
+      # from GitHub Secrets, then runs the deploy script on the server.
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+            echo "→ entering project directory"
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "→ fetching latest from origin"
+            git fetch origin main
+
+            echo "→ resetting working tree to origin/main"
+            # hard reset means: GitHub is source of truth, wipe any drift
+            git reset --hard origin/main
+
+            echo "→ rebuilding api container"
+            cd deploy
+            docker compose build api
+
+            echo "→ restarting api container"
+            # --no-deps means: don't touch other containers (Redis, postgres later)
+            # -d means: detached, runs in background
+            docker compose up -d --no-deps api
+
+            echo "→ pruning old images to save disk"
+            # removes dangling layers from the rebuild — frees ~50-200MB per deploy
+            docker image prune -f
+
+            echo "→ checking container health"
+            sleep 5
+            docker ps --filter "name=maskwise-api" --format "{{.Names}}: {{.Status}}"
+
+      # final smoke test — hit the public URL from GitHub Actions itself.
+      # if this fails after a successful SSH deploy, something's broken
+      # in the container even though docker says it's running.
+      - name: Verify live site responds
+        run: |
+          echo "→ hitting public health endpoint"
+          sleep 3
+          response=$(curl -sf https://maskwise.nakularora.tech/health || echo "FAILED")
+          echo "Response: $response"
+
+          # fail the workflow if /health didn't return JSON with status:ok
+          if [[ "$response" != *'"status":"ok"'* ]]; then
+            echo "❌ Deploy completed but /health did not return ok"
+            exit 1
+          fi
+
+          echo "✅ Deploy verified — live site responding"
