@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir --prefix=/install https://github.com/explosion/sp
 # no build tools, no pip cache, no apt cache — minimal attack surface
 FROM python:3.11-slim AS runtime
 
-# create non-root user — NHS lesson: never run containers as root
+# create non-root user — never run containers as root in production
 RUN groupadd -r maskwise && useradd -r -g maskwise -d /app -s /sbin/nologin maskwise
 
 WORKDIR /app

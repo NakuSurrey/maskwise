@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════
 # MaskWise — docker compose (v2 syntax)
 # ═══════════════════════════════════════════════════════════════════
-# every hardening choice here traces back to a specific NHS-incident
+# every hardening choice below is a defence against a specific attack pattern
 # lesson. comments name the lesson so future-me / a reviewer can
 # audit the security decisions without reading the post-mortem.
 #
@@ -36,37 +36,31 @@ services:
       dockerfile: Dockerfile
     image: maskwise-api:latest
     container_name: maskwise-api
-    restart: on-failure:3            # NHS §22 — NOT unless-stopped (force-multiplier for malware)
+    restart: on-failure:3            # on-failure:3 not unless-stopped — limits malware persistence on crash loops
 
-    # NHS §3 root cause 1 — never bind containers to 0.0.0.0
+    # never bind containers to 0.0.0.0 — internet scanners would see them
     # 127.0.0.1 means only nginx (running on the host) can reach it.
     # internet scanners see nothing on this port.
     ports:
       - "127.0.0.1:8005:8005"
 
-    environment:
-      # all of these come from the .env file at repo root (one level up
-      # from this compose file). real secrets stay in .env (gitignored).
-      APP_ENV: ${APP_ENV:-production}
-      APP_PORT: 8005
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      # Phase 1 vars (uncomment when redis lands):
-      # REDIS_HOST: redis
-      # REDIS_PORT: 6379
-      # REDIS_PASSWORD: ${REDIS_PASSWORD}
-      # SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-3600}
+    # load all MASKWISE_* vars from the .env file at /opt/maskwise/.env
+    # docker-compose resolves paths relative to this compose file's location,
+    # so ../ points at /opt/maskwise/ (the repo root)
+    env_file:
+      - ../.env
 
-    # NHS §20 — tmpfs /tmp with noexec,nosuid
+    # tmpfs /tmp with noexec,nosuid — blocks any dropped binary from running
     # any binary dropped into /tmp cannot execute (kernel-enforced)
-    # this is what would have stopped the April /tmp/mysql miner cold.
+    # this stops the common /tmp-based crypto-miner attack pattern
     tmpfs:
       - /tmp:noexec,nosuid,size=64m
 
-    # NHS §20 — hard CPU and memory caps
+    # hard CPU and memory caps — compromise cannot pin the box or exhaust RAM
     # even if compromised, container cannot pin the box or exhaust RAM.
     # 1 vCPU + 1 GB is plenty for the stub. Phase 2 model-worker will get more.
     cpus: "1.0"
-    mem_limit: 1g
+    mem_limit: 1.5g
 
     # health check — duplicates the in-container check from Dockerfile.
     # docker compose uses this for `condition: service_healthy` deps.
@@ -74,14 +68,14 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health').read()"]
       interval: 30s
       timeout: 5s
-      start_period: 10s
+      start_period: 30s
       retries: 3
 
     networks:
       - maskwise-internal
 
     # logging — capped so a runaway log doesn't fill the disk.
-    # NHS §20 implication — disk got to 53% partly from uncapped logs.
+    # capped — uncapped logs can fill the disk and crash the host
     logging:
       driver: "json-file"
       options:
@@ -117,7 +111,7 @@ services:
 
 
 # ─── networks ─────────────────────────────────────────────────
-# NHS §22 — "Docker network isolation is not a security boundary"
+# docker network isolation alone is not a security boundary —
 # but it IS a hygiene boundary — MaskWise containers cannot
 # accidentally talk to nhs-db or any other project's containers.
 networks:
