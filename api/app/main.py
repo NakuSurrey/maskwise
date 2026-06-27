@@ -14,6 +14,8 @@ from slowapi.errors import RateLimitExceeded
 from app.auth import require_api_key
 from app.config import settings
 from app.masker import Masker
+from app.db import engine, Base
+from app import models  # noqa: F401 - import registers User + ApiKey tables on Base
 from app.rate_limit import limiter
 from app.schemas import MaskRequest, MaskResponse
 
@@ -26,6 +28,8 @@ from app.schemas import MaskRequest, MaskResponse
 async def lifespan(app: FastAPI):
     # startup
     app.state.masker = Masker()
+    # create users + api_keys tables if they do not exist yet
+    Base.metadata.create_all(bind=engine)
     yield
     # shutdown — nothing to clean up; spaCy releases RAM on process exit
 

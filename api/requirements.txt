@@ -1,27 +1,30 @@
 # ─── core web framework ─────────────────────────────────────────
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
-
 # ─── config + validation ────────────────────────────────────────
 pydantic==2.9.2
 pydantic-settings==2.6.0
-
 # ─── pii detection engine (Phase 1) ─────────────────────────────
 # presidio-analyzer finds PII spans in text using spaCy + recognizers
 # presidio-anonymizer replaces those spans with masks/redactions
 presidio-analyzer==2.2.355
 presidio-anonymizer==2.2.355
-
 # ─── nlp backbone (Phase 1) ─────────────────────────────────────
 # spaCy powers Presidio's NER (names, locations, organizations)
 # pinned to <3.8 because presidio-analyzer 2.2.355 requires it
 spacy>=3.7.0,<3.8.0
-
 # ─── rate limiting (Phase 1) ────────────────────────────────────
 # slowapi caps requests per IP per minute — runs before auth check
 # so brute-force key guessing gets stopped at the door
 slowapi==0.1.9
-
-# NOTE — Phase 2 will add: redis (distributed rate limit + sessions), structlog
+# --- accounts + dashboard (Phase 2) ---
+# sqlalchemy maps User/ApiKey python classes to postgres tables
+sqlalchemy==2.0.36
+# psycopg2 is the postgres driver sqlalchemy talks through
+psycopg2-binary==2.9.10
+# bcrypt hashes user passwords (slow on purpose)
+bcrypt==4.2.0
+# pyjwt signs and verifies login tokens
+pyjwt==2.9.0
 # NOTE — Phase 3 will add: onnxruntime, transformers
 # NOTE — Phase 4 will add: paddleocr, retinaface, opencv-python-headless
