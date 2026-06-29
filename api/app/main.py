@@ -18,6 +18,7 @@ from app.db import engine, Base
 from app import models  # noqa: F401 - import registers User + ApiKey tables on Base
 from app.rate_limit import limiter
 from app.schemas import MaskRequest, MaskResponse
+from app.routes_auth import router as auth_router
 
 
 # ─── lifespan — runs once on startup, once on shutdown ──────────
@@ -52,6 +53,9 @@ app = FastAPI(
 # register the 429 handler so over-limit requests get a clean JSON response
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# mount auth routes: /auth/register, /auth/login
+app.include_router(auth_router)
 
 
 # ─── routes ─────────────────────────────────────────────────────
