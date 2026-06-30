@@ -39,3 +39,23 @@ def decode_access_token(token: str) -> int | None:
         return int(payload["sub"])
     except (jwt.InvalidTokenError, KeyError, ValueError):
         return None
+
+
+# --- api keys ---
+
+import hashlib
+import secrets
+
+
+def generate_api_key() -> tuple[str, str]:
+    # make a random key and the short prefix shown in the dashboard.
+    # token_urlsafe gives a long random string, safe in URLs and headers.
+    raw = "mk_live_" + secrets.token_urlsafe(32)
+    prefix = raw[:12]
+    return raw, prefix
+
+
+def hash_api_key(raw: str) -> str:
+    # sha256 hex of the full key. fast and one-way, so we store this not the key.
+    # keys are long and random, so sha256 (no salt) is safe here - unlike passwords.
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
